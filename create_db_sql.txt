@@ -1,0 +1,178 @@
+create database proxymg;
+
+
+
+use proxymg;
+
+
+GRANT SELECT,INSERT,UPDATE,DELETE on proxymg.*
+TO root@localhost
+IDENTIFIED BY 'Solonor';
+
+
+
+create table xconn (
+xconn_key numeric(11,0) primary key,
+xconn_name  varchar(20),
+xconn_charge_threads numeric(2,0),
+xconn_send_threads numeric(2,0),
+xconn_notif_threads numeric(2,0),
+xconn_send_class varchar(200),
+xconn_charge_start_hour numeric(2,0),
+xconn_charge_end_hour numeric(2,0),
+xconn_send_start_hour numeric(2,0),
+xconn_send_end_hour numeric(2,0),
+xconn_proxyof  numeric(11,0),
+xconn_notif_failed numeric(1,0),
+xconn_charge_retries numeric(2,0),
+xconn_send_retries numeric(2,0),
+xconn_notif_retries numeric(2,0),
+xconn_async_ack numeric(1,0),
+xconn_status numeric(1,0),
+xconn_props varchar(100),
+xconn_retry_minutes integer,
+xconn_op_id integer
+);
+
+
+create table service (
+service_id numeric(11,0) primary key,
+service_charge_cl varchar(200),
+service_prepr_cl varchar(200),
+service_status numeric(1,0),
+);
+
+
+create table senq
+(
+senq_id numeric(19,0) primary key,
+origin varchar(40),
+dest  varchar(40),
+message varchar(200),
+aditional_message varchar(1000),
+xconn_key numeric(12,0),
+service_id numeric(12,0),
+charge numeric(1,0),
+ext_id varchar(200),
+retries numeric(5,0),
+priority numeric(2,0),
+qtime datetime,
+stime datetime,
+status numeric(2,0),
+op_id numeric(5,0),
+ctype numeric(2,0),
+ref1 numeric(19,0),
+ref2 numeric(19,0),
+ref3 numeric(19,0),
+charge_status numeric(2,0),
+purpose_id numeric(19,0),
+sender varchar(50)
+);
+
+
+
+create table chargeq
+(
+senq_id numeric(19,0) primary key,
+origin varchar(40),
+dest  varchar(40),
+message varchar(200),
+aditional_message varchar(1000),
+xconn_key numeric(12,0),
+service_id numeric(12,0),
+charge numeric(1,0),
+ext_id varchar(200),
+retries numeric(5,0),
+priority numeric(2,0),
+qtime datetime,
+stime datetime,
+status numeric(2,0),
+op_id numeric(5,0),
+ctype numeric(2,0),
+ref1 numeric(19,0),
+ref2 numeric(19,0),
+ref3 numeric(19,0)
+);
+
+create table notifq
+(
+senq_id numeric(19,0) primary key,
+origin varchar(40),
+dest  varchar(40),
+message varchar(200),
+aditional_message varchar(1000),
+xconn_key numeric(12,0),
+service_id numeric(12,0),
+charge numeric(1,0),
+ext_id varchar(200),
+retries numeric(5,0),
+priority numeric(2,0),
+qtime datetime,
+stime datetime,
+status numeric(2,0),
+op_id numeric(5,0),
+ctype numeric(2,0),
+charge_status numeric(2,0),
+send_status numeric(2,0),
+ref1 numeric(19,0),
+ref2 numeric(19,0),
+ref3 numeric(19,0)
+);
+
+
+
+
+create table smsfinal
+(
+senq_id numeric(19,0) primary key,
+origin varchar(40),
+dest  varchar(40),
+message varchar(200),
+aditional_message varchar(1000),
+xconn_key numeric(12,0),
+service_id numeric(12,0),
+charge numeric(1,0),
+ext_id varchar(200),
+retries numeric(5,0),
+priority numeric(2,0),
+qtime datetime,
+stime datetime,
+status numeric(2,0),
+op_id numeric(5,0),
+ctype numeric(2,0),
+charge_status numeric(2,0),
+send_status numeric(2,0),
+notif_status numeric(2,0),
+ref1 numeric(19,0),
+ref2 numeric(19,0),
+ref3 numeric(19,0)
+);
+
+
+create index sq1 on senq (status,stime,priority);
+
+create index ch1 on chargeq (status,stime,priority);
+
+
+create unique index pksq on senq (senq_id);
+
+create unique index pkchq on chargeq (senq_id);
+
+create unique index pknotq on notifq (senq_id);
+
+create unique index pkfinal on smsfinal (senq_id);
+
+
+--GRANT SELECT,INSERT,UPDATE,DELETE on proxymg.*
+  --   TO root@XXX
+    -- IDENTIFIED BY 'Solonor';
+
+
+
+-- port 3306
+
+
+-- alter table smsfinal add 
+-- (notif_status numeric(2,0))
+-- ref2 numeric(19,0),
+-- ref3 numeric(19,0));
